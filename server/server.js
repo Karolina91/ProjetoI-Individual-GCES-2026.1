@@ -25,7 +25,7 @@ pool.query(`
   .catch(err => console.error('Erro ao conectar DB:', err));
 
 // Servir arquivos estáticos do frontend
-app.use(express.static(__dirname + '/../game'));
+app.use(express.static('/game'));
 
 // Rota para histórico de lutas
 app.get('/api/fights', async (req, res) => {
