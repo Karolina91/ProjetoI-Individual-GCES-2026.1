@@ -26,6 +26,6 @@ describe('GameCollection', () => {
 
   test('deve retornar null para jogo inexistente', () => {
     const game = games.getGame('naoexiste');
-    expect(game).toBe(999); // ❌ ERRADO DE PROPÓSITO - vai quebrar o CI
+    expect(game).toBeNull(); // ✅ correto agora
   });
 });
