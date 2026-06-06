@@ -26,6 +26,6 @@ describe('GameCollection', () => {
 
   test('deve retornar null para jogo inexistente', () => {
     const game = games.getGame('naoexiste');
-    expect(game).toBeNull(); // ✅ correto agora
+    expect(game).toBeNull(); // ✅ correto
   });
 });
