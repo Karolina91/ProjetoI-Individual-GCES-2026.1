@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mkjs-db
+  namespace: mkjs
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mkjs-db
+  template:
+    metadata:
+      labels:
+        app: mkjs-db
+    spec:
+      containers:
+      - name: mkjs-db
+        image: postgres:16-alpine
+        ports:
+        - containerPort: 5432
+        env:
+        - name: POSTGRES_USER
+          value: mkuser
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mkjs-secrets
+              key: db-password
+        - name: POSTGRES_DB
+          value: mkjsdb
+        volumeMounts:
+        - name: pgdata
+          mountPath: /var/lib/postgresql/data
+      volumes:
+      - name: pgdata
+        emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: db
+  namespace: mkjs
+spec:
+  selector:
+    app: mkjs-db
+  ports:
+  - port: 5432
+    targetPort: 5432
