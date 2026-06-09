@@ -1,4 +1,4 @@
-# mk.js — Trabalho Individual GCES 2026-1
+# Trabalho Individual - Gerência de Configuração e Evolução de Software (2026-1)
 
 Jogo de luta implementado com **Node.js/Express** no backend e **HTML5 Canvas** no frontend, containerizado e com pipeline completo de CI/CD.
 
