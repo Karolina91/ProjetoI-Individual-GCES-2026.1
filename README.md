@@ -1,33 +1,110 @@
-# Trabalho Individual - Gerência de Configuração e Evolução de Software (2026-1)
+# mk.js — Trabalho Individual GCES 2026-1
 
-Os conhecimentos de Gerência de Configuração e Evolução de Software (GCES) são fundamentais no ciclo de vida de um produto de software moderno. Este trabalho tem como objetivo exercitar os conceitos de automação, isolamento de ambiente, testes, segurança (DevSecOps) e deploy contínuo.
+Jogo de luta implementado com **Node.js/Express** no backend e **HTML5 Canvas** no frontend, containerizado e com pipeline completo de CI/CD.
 
-A aplicação base é o **mk.js**, um jogo de luta implementado com Backend em Node.js/Express e Frontend em HTML5 Canvas/JavaScript. O projeto original é considerado *deprecated* e possui dependências antigas; parte do desafio é modernizar o ambiente para que ele execute com versões estáveis atuais.
+---
 
-## Requisitos do Projeto
+## Ambiente de Desenvolvimento
 
-O trabalho está dividido em 10 etapas, cada uma valendo **1,0 ponto**. O foco é a implementação técnica aliada à correta documentação e histórico de commits.
+### Pré-requisitos
 
-### Critérios de Avaliação (10 Fases)
+- [Docker](https://www.docker.com/) instalado
+- [Docker Compose](https://docs.docker.com/compose/) instalado
 
-| Fase | Descrição Técnica | Nota por etapa |
-|---|---|---|
-| 1. **Containerização (DEV)** | Elaboração de `Dockerfile` para ambiente de desenvolvimento com suporte a hot-reload (mudanças no código refletidas imediatamente no container). | 0-10% |
-| 2. **Docker Compose (DEV)** | Configuração de um `docker-compose.yml` que integre a aplicação e um banco de dados **Postgres**. Você deve implementar uma camada simples de persistência no código (ex: salvar histórico de lutas ou nomes de jogadores). | 10% - 20% |
-| 3. **CI - Build & Lint** | Automação das etapas de Build e Lint (Front e Back) via GitHub Actions. O pipeline deve falhar se o lint encontrar erros. | 20% - 30% |
-| 4. **CI - Testes Unitários** | Implementação de testes unitários funcionais. **Obrigatório:** Commits sequenciais demonstrando o teste quebrando no CI e, em seguida, passando após correção. | 30% - 40% |
-| 5. **CI - Testes de Fuzzing** | Implementação de testes de Fuzzing para validar a resiliência das entradas do servidor (Back-end) contra dados inesperados. | 40% - 50% |
-| 6. **Segurança - SAST & SCA** | Integração de ferramentas de análise estática de segurança (SAST) e verificação de vulnerabilidades em dependências (SCA - ex: Snyk ou npm audit). | 50% - 60% |
-| 7. **Qualidade de Código** | Integração completa com o **SonarCloud** no pipeline de CI, garantindo métricas de qualidade e cobertura mínima. | 60% - 70% |
-| 8. **Containerização (PROD)** | Elaboração de `Dockerfiles` otimizados para produção (multi-stage build, baseados em Alpine) e configuração do **Nginx** como servidor de arquivos estáticos. | 70% - 80% | 
-| 9. **Infraestrutura (K8s & Terraform)** | Criação de manifestos de **Kubernetes (K8s)** para orquestração da aplicação. Opcionalmente, utilize **Terraform** para provisionar a infraestrutura necessária. | 80% - 90% |
-| 10. **CD & Segurança de Rede** | Deploy Contínuo com publicação de imagens e configuração de **HTTPS via Cert Manager**. O Nginx deve redirecionar porta 80 para 443 e não expor outras portas para fora da rede de containers. | 90% - 100% |
+### Passo a passo
 
-## Orientações Gerais
+**1. Clone o repositório**
+```bash
+git clone https://github.com/Karolina91/ProjetoI-Individual-GCES-2026.1.git
+cd ProjetoI-Individual-GCES-2026.1
+```
 
-*   **Repositório:** O trabalho deve ser desenvolvido em um repositório pessoal no GitHub.
-*   **Commits:** Devem ser atômicos e espaçados no tempo. Commits realizados todos juntos na data de entrega serão penalizados.
-*   **Modernização:** É responsabilidade do aluno atualizar o `package.json` e as dependências do servidor para garantir compatibilidade com as versões mais recentes do Node.js.
-*   **Documentação:** O `README.md` final deve conter o passo a passo de como subir o ambiente de desenvolvimento e como visualizar o ambiente de produção.
+**2. Suba os containers de desenvolvimento**
+```bash
+docker compose up --build
+```
 
-Boa sorte!
+**3. Acesse a aplicação**
+
+- Frontend: [http://localhost:80](http://localhost:80)
+- Backend/API: [http://localhost:3000](http://localhost:3000)
+
+> O ambiente de desenvolvimento suporta **hot-reload** — alterações no código são refletidas automaticamente sem precisar reiniciar o container.
+
+**4. Para parar os containers**
+```bash
+docker compose down
+```
+
+---
+
+## Ambiente de Produção
+
+As imagens de produção são publicadas automaticamente no Docker Hub via GitHub Actions sempre que há um push na branch `main`.
+
+### Imagens publicadas
+
+- `karol327/mkjs-app:latest` — Backend Node.js (build otimizado multi-stage Alpine)
+- `karol327/mkjs-nginx:latest` — Nginx servindo o frontend estático com HTTPS
+
+### Rodando as imagens de produção localmente
+
+**1. Baixe as imagens**
+```bash
+docker pull karol327/mkjs-app:latest
+docker pull karol327/mkjs-nginx:latest
+```
+
+**2. Suba os containers**
+```bash
+docker run -d -p 3000:3000 karol327/mkjs-app:latest
+docker run -d -p 443:443 -p 80:80 karol327/mkjs-nginx:latest
+```
+
+**3. Acesse**
+
+- [http://localhost](http://localhost) — redireciona automaticamente para HTTPS
+- [https://localhost](https://localhost) — aplicação em produção
+
+> O Nginx está configurado para redirecionar toda requisição da porta 80 para 443 (HTTPS).
+
+---
+
+## Pipeline CI/CD
+
+O pipeline é executado automaticamente via **GitHub Actions** a cada push ou pull request na branch `main`:
+
+| Job | Descrição |
+|---|---|
+| Lint | Valida o código com ESLint |
+| Testes Unitários | Executa os testes com Jest |
+| Testes de Fuzzing | Valida resiliência do backend com entradas inesperadas |
+| Segurança (SCA) | Verifica vulnerabilidades com `npm audit` |
+| SonarCloud | Análise de qualidade e cobertura de código |
+| CD - Publicar Imagens | Build e push das imagens para o Docker Hub |
+
+---
+
+## Infraestrutura (Kubernetes)
+
+Os manifestos Kubernetes estão na pasta `k8s/` e incluem:
+
+- Deployment e Service da aplicação Node.js
+- Deployment e Service do Nginx
+- Deployment do banco de dados Postgres
+- Secrets para credenciais
+- **ClusterIssuer e Certificate** do Cert Manager para HTTPS via Let's Encrypt
+- Ingress com redirecionamento 80 → 443
+
+---
+
+## Tecnologias utilizadas
+
+- Node.js + Express
+- PostgreSQL
+- Docker + Docker Compose
+- Nginx
+- GitHub Actions
+- SonarCloud
+- Kubernetes
+- Cert Manager (Let's Encrypt)
